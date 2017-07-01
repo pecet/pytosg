@@ -4,6 +4,10 @@
 Simple script converting twitter json export to sqlite database, with some basic post processing
 License : MIT
 Author  : Piotr Czarny
+
+TODO: Store parsed files in db, so next time parsing is started, we only parse new files
+TODO: Also store db version or something in db, so we will force parsing if DB format is not current
+      (after confirmation)
 """
 import sys
 import sqlite3
@@ -60,7 +64,14 @@ class TwitterJsonToSqliteConverter(object):
         json_str = json_str.replace('Grailbird.data.tweets_' + file_name_without_ext + ' = ', '')
         json_obj = json.loads(json_str)
 
+        counter = 0
         for data in json_obj:
+            counter += 1
+            if counter % 20 == 1 or counter == len(json_obj):
+                print '      Parsed {0} of {1} tweets ({2}%)'.format(
+                    counter, len(json_obj), round(float(counter) / float(len(json_obj)) * 100, 1)
+                    )
+
             source_parsed = None
             if data.get('source'):
                 source = data.get('source')
@@ -95,7 +106,7 @@ class TwitterJsonToSqliteConverter(object):
                 continue
 
     def parse_dir(self, dir_name):
-        """ Iterate through json files in chosen directory """
+        """ Iterate through JSON files in chosen directory and parse them """
         self._create_database_tables()
         for file_name in glob.glob(dir_name + '*.js'):
             file_name = file_name.replace('\\', '/')
