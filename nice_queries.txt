@@ -1,3 +1,6 @@
 SELECT source_parsed, count(source_parsed) AS count FROM tweets GROUP BY source_parsed ORDER BY count DESC
 
-SELECT in_reply_to_screen_name, count(in_reply_to_screen_name) AS count FROM tweets WHERE in_reply_to_screen_name IS NOT NULL GROUP BY in_reply_to_screen_name ORDER BY count DESC
+SELECT in_reply_to_screen_name, count(in_reply_to_screen_name) AS count FROM tweets WHERE in_reply_to_screen_name IS NOT NULL GROUP BY in_reply_to_screen_name ORDER BY count 
+DESC
+
+SELECT *, strftime('%Y',created_at) AS year, strftime('%m',created_at) AS month, strftime('%d',created_at) AS day, strftime('%H',created_at) AS hour, strftime('%M',created_at) AS minute, strftime('%w',created_at) AS day_of_week, strftime('%W',created_at) AS week_of_year, strftime('%j',created_at) AS day_of_year  FROM tweets

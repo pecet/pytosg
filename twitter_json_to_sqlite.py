@@ -93,8 +93,21 @@ class TwitterJsonToSqliteConverter(object):
         )
         """)
 
-        self.database_cursor.execute(""" CREATE UNIQUE INDEX word_idx ON
+        self.database_cursor.execute(""" CREATE UNIQUE INDEX IF NOT EXISTS word_idx ON
         tweet_words(word) """)
+
+        self.database_cursor.execute(""" CREATE VIEW IF NOT EXISTS tweets_parsed_time AS
+        SELECT *,
+            strftime('%Y', created_at) AS year,
+            strftime('%m', created_at) AS month,
+            strftime('%d', created_at) AS day,
+            strftime('%H', created_at) AS hour,
+            strftime('%M', created_at) AS minute,
+            strftime('%w', created_at) AS day_of_week,
+            strftime('%W', created_at) AS week_of_year,
+            strftime('%j', created_at) AS day_of_year
+        FROM tweets;
+        """)
 
 
     @classmethod
@@ -152,7 +165,7 @@ class TwitterJsonToSqliteConverter(object):
             tweets_obj = (data.get('id'),
                           data.get('id_str'),
                           data.get('text'),
-                          data.get('created_at'),
+                          data.get('created_at').replace(' +0000', ''),
                           data.get('in_reply_to_status_id'),
                           data.get('in_reply_to_status_id_str'),
                           data.get('in_reply_to_user_id'),
