@@ -87,11 +87,14 @@ class TwitterJsonToSqliteConverter(object):
 
             -- ids
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            tweet_id INTEGER NOT NULL,
-            word TEXT NOT NULL
+            word TEXT NOT NULL,
+            count INTEGER NOT NULL
 
         )
         """)
+
+        self.database_cursor.execute(""" CREATE UNIQUE INDEX word_idx ON
+        tweet_words(word) """)
 
 
     @classmethod
@@ -180,12 +183,21 @@ class TwitterJsonToSqliteConverter(object):
                 VALUES (?, ?)
                 """, (data.get('id'), hashtag))
 
+            # we cannot have all words in db, it does not make sense
+            # instead we store word and word count
+            # note that, because of that only getting word count from whole
+            # parsing period is supported
+            # TODO: maybe, separate word count for months, years etc?
             for word in parsed_text.words:
-                self.database_cursor.execute(""" INSERT INTO tweet_words (
-                    tweet_id, word
+                self.database_cursor.execute(""" INSERT OR IGNORE INTO tweet_words (
+                    word, count
                 )
                 VALUES (?, ?)
-                """, (data.get('id'), word))
+                """, (word, 0))
+
+                self.database_cursor.execute(""" UPDATE OR IGNORE tweet_words
+                SET count = count + 1 WHERE word = ?
+                """, (word,))
 
             try:
                 self.database.commit()
