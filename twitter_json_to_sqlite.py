@@ -149,7 +149,7 @@ class TwitterJsonToSqliteConverter(object):
         counter = 0
         for data in json_obj:
             counter += 1
-            if counter % 40 == 1 or counter == len(json_obj):
+            if counter % 104 == 1 or counter == len(json_obj):
                 print '      Parsed {0} of {1} tweets ({2}%)'.format(
                     counter, len(json_obj), round(float(counter) / float(len(json_obj)) * 100, 1)
                     )
@@ -228,9 +228,10 @@ class TwitterJsonToSqliteConverter(object):
 
 def main():
     """ Main method """
-    #data_dir = 'tweets/data/js/tweets/'
-    #TwitterJsonToSqliteConverter().parse_dir(data_dir)
-    TwitterJsonToSqliteConverter().parse_file('tweets/data/js/tweets/2016_11.js') #just for testing
+    data_dir = 'tweets/data/js/tweets/'
+    TwitterJsonToSqliteConverter().parse_dir(data_dir)
+    #TwitterJsonToSqliteConverter().parse_file('tweets/data/js/tweets/2016_11.js') #just for testing
+    #TwitterJsonToSqliteConverter().parse_file('tweets/data/js/tweets/2008_04.js') #just for testing
 
 if __name__ == "__main__":
     sys.exit(main())
