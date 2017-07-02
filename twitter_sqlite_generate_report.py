@@ -18,11 +18,20 @@ import pygal
 from timeit import timeit
 from pprint import pprint
 
+class HTMLOutput(object):
+    """ HTML output renderer, using Mako templates """
+    def __init__(self):
+        pass
+
+    def render(self, data):
+        """ Render HTML file """
+
 class TwitterStatsGenerator(object):
     """ Class which generates statistics from Twitter SQLite file """
-    def __init__(self, database_filename='tweets.sqlite'):
+    def __init__(self, database_filename='tweets.sqlite', output_renderer_cls=HTMLOutput):
         self.database = sqlite3.connect(database_filename)
         self.database_cursor = self.database.cursor()
+        self.output_renderer_cls = output_renderer_cls
         if not self._check_if_tables_exists():
             raise Exception('Required database tables are not present in {0} file'.
                             format(database_filename))
@@ -70,17 +79,26 @@ class TwitterStatsGenerator(object):
         return to_return
 
     def query(self):
-        """ Do queries and stuff """
+        """ Generate dictionary with query output """
         to_return = {}
         to_return['tweet_count_total'] = self._query_total_tweets()
         to_return['tweet_count_per_year'] = self._query_total_tweets_per_year()
         to_return['tweet_count_per_year_moth'] = self._query_total_tweets_per_year_month()
         return to_return
 
+    def render(self):
+        """ Render output statistics file using chosen renderer """
+        data = self.query()
+        pprint(data) # debug only
+        render_op = getattr(self.output_renderer_cls, "render", None)
+        if callable(render_op):
+            self.output_renderer_cls().render(data)
+
+
 
 def main():
     """ Main method """
-    print timeit(lambda: pprint(TwitterStatsGenerator().query()), number=1)
+    print timeit(lambda: TwitterStatsGenerator().render(), number=1)
 
 if __name__ == "__main__":
     sys.exit(main())
