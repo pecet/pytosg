@@ -15,16 +15,27 @@ import time
 import collections
 import mako
 import pygal
+from abc import ABCMeta, abstractmethod
 from timeit import timeit
 from pprint import pprint
 
-class HTMLOutput(object):
-    """ HTML output renderer, using Mako templates """
-    def __init__(self):
+class Output(object):
+    """ Abstract class base for output classes """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def render(self, data):
+        """ Render passed data """
         pass
+
+
+class HTMLOutput(Output):
+    """ HTML output renderer, using Mako templates """
 
     def render(self, data):
         """ Render HTML file """
+
+
 
 class TwitterStatsGenerator(object):
     """ Class which generates statistics from Twitter SQLite file """
@@ -98,7 +109,7 @@ class TwitterStatsGenerator(object):
 
 def main():
     """ Main method """
-    print timeit(lambda: TwitterStatsGenerator().render(), number=1)
+    print timeit(lambda: TwitterStatsGenerator(output_renderer_cls=HTMLOutput).render(), number=1)
 
 if __name__ == "__main__":
     sys.exit(main())
