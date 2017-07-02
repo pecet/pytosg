@@ -13,11 +13,12 @@ import json
 import glob
 import time
 import collections
-import mako
-import pygal
 from abc import ABCMeta, abstractmethod
 from timeit import timeit
 from pprint import pprint
+import pygal
+from mako.template import Template
+
 
 class Output(object):
     """ Abstract class base for output classes """
@@ -34,7 +35,8 @@ class HTMLOutput(Output):
 
     def render(self, data):
         """ Render HTML file """
-
+        mako_template = Template(filename='html_template.mako', module_directory='tmp/')
+        return mako_template.render_unicode(**data)
 
 
 class TwitterStatsGenerator(object):
@@ -74,8 +76,21 @@ class TwitterStatsGenerator(object):
                                         FROM tweets_parsed_time
                                         GROUP BY year""")
         to_return = {}
+        first_year = None
+        last_year = None
+
         for row in self.database_cursor.fetchall():
+            if not first_year:
+                first_year = int(row[1])
+            last_year = int(row[1])
+
             to_return[int(row[1])] = row[0]
+
+        # if year is not found, we need to fill its data with zeros
+        for year in xrange(first_year, last_year + 1):
+            if year not in to_return:
+                to_return[year] = 0
+
         return to_return
 
     def _query_total_tweets_per_year_month(self):
@@ -83,10 +98,27 @@ class TwitterStatsGenerator(object):
                                         FROM tweets_parsed_time
                                         GROUP BY year, month""")
         to_return = {}
+        first_year = None
+        last_year = None
+
         for row in self.database_cursor.fetchall():
+            if not first_year:
+                first_year = int(row[1])
+            last_year = int(row[1])
+
             if int(row[1]) not in to_return:
                 to_return[int(row[1])] = {}
             to_return[int(row[1])][int(row[2])] = row[0]
+
+        # if year is not found, we need to fill its data with zeros for each month
+        for year in xrange(first_year, last_year + 1):
+            if year not in to_return:
+                to_return[year] = {}
+            for month in xrange(1, 13):
+                if month not in to_return[year]:
+                    to_return[year][month] = 0
+
+
         return to_return
 
     def query(self):
@@ -94,7 +126,7 @@ class TwitterStatsGenerator(object):
         to_return = {}
         to_return['tweet_count_total'] = self._query_total_tweets()
         to_return['tweet_count_per_year'] = self._query_total_tweets_per_year()
-        to_return['tweet_count_per_year_moth'] = self._query_total_tweets_per_year_month()
+        to_return['tweet_count_per_year_month'] = self._query_total_tweets_per_year_month()
         return to_return
 
     def render(self):
@@ -103,8 +135,11 @@ class TwitterStatsGenerator(object):
         pprint(data) # debug only
         render_op = getattr(self.output_renderer_cls, "render", None)
         if callable(render_op):
-            self.output_renderer_cls().render(data)
-
+            output = self.output_renderer_cls().render(data)
+            # debug only
+            print output
+            with open('output.html', 'w') as output_file:
+                output_file.write(output)
 
 
 def main():

@@ -1,3 +1,6 @@
 tweets/
 **/tweets/
 *.sqlite
+output.html
+tmp/
+**/tmp/
