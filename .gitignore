@@ -4,3 +4,7 @@ tweets/
 output.html
 tmp/
 **/tmp/
+*.pyc
+*.pyo
+**/*.pyc
+**/*.pyo
