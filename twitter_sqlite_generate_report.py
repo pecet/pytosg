@@ -12,7 +12,7 @@ import sqlite3
 import json
 import glob
 import time
-import collections
+from collections import OrderedDict
 from abc import ABCMeta, abstractmethod
 from timeit import timeit
 from pprint import pprint
@@ -74,7 +74,7 @@ class TwitterStatsGenerator(object):
         self.database_cursor.execute("""SELECT COUNT(*) AS count, year
                                         FROM tweets_parsed_time
                                         GROUP BY year""")
-        to_return = {}
+        to_return = OrderedDict()
         first_year = None
         last_year = None
 
@@ -96,7 +96,7 @@ class TwitterStatsGenerator(object):
         self.database_cursor.execute("""SELECT COUNT(*) AS count, year, month
                                         FROM tweets_parsed_time
                                         GROUP BY year, month""")
-        to_return = {}
+        to_return = OrderedDict()
         first_year = None
         last_year = None
 
@@ -106,13 +106,13 @@ class TwitterStatsGenerator(object):
             last_year = int(row[1])
 
             if int(row[1]) not in to_return:
-                to_return[int(row[1])] = {}
+                to_return[int(row[1])] = OrderedDict()
             to_return[int(row[1])][int(row[2])] = row[0]
 
         # if year is not found, we need to fill its data with zeros for each month
         for year in xrange(first_year, last_year + 1):
             if year not in to_return:
-                to_return[year] = {}
+                to_return[year] = OrderedDict()
             for month in xrange(1, 13):
                 if month not in to_return[year]:
                     to_return[year][month] = 0
@@ -136,7 +136,7 @@ class TwitterStatsGenerator(object):
         if callable(render_op):
             output = output_renderer_cls().render(data)
             # debug only
-            print output
+            # print output
             with open('output.html', 'w') as output_file:
                 output_file.write(output)
 
