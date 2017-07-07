@@ -83,10 +83,25 @@ class Output(object):
 class HTMLOutput(Output):
     """ HTML output renderer, using Mako templates """
 
+    def _preprocess(self, text, data):
+        """ Preprocess mako template, to automatically access data dictionary
+            as we cannot unpack data in render_unicode directly using ** operator
+            because unpacking is accessing individual items via __getitem__
+            advantages of LazyDict
+            Because of this preprocessing you can write in mako template e.g.:
+            ${tweet_count_total}
+            Instead of:
+            ${data['tweet_count_total']}
+            """
+        for key in data.keys():
+            text = text.replace(key, 'data[\'' + key + '\']')
+        return text
+
     def render(self, data):
         """ Render HTML file """
-        mako_template = Template(filename='html_template.mako', module_directory='tmp/')
-        return mako_template.render_unicode(d=data)
+        mako_template = Template(filename='html_template.mako', module_directory='tmp/',
+                                 preprocessor=lambda text: self._preprocess(text, data))
+        return mako_template.render_unicode(data=data)
 
 
 class TwitterStatsGenerator(object):
@@ -214,15 +229,16 @@ class TwitterStatsGenerator(object):
 def main():
     """ Main method """
     # TODO: add unit tests
-    #dtest = LazyDict()
-    #dtest["A"] = lambda: 10
-    #dtest["B"] = lambda: 20
-    #pprint(dtest)
-    #print(dtest)
-    #pprint(dtest["B"])
-    #pprint(dtest["B"])
-    #pprint(dtest)
-    #sys.exit(0)
+    # dtest = LazyDict()
+    # dtest["A"] = lambda: 10
+    # dtest["B"] = lambda: 20
+    # pprint(dtest)
+    # print(dtest)
+    # pprint(dtest["B"])
+    # pprint(dtest["B"])
+    # pprint(dtest)
+    # sys.exit(0)
+
     print timeit(lambda: TwitterStatsGenerator().render(output_renderer_cls=HTMLOutput), number=1)
 
 if __name__ == "__main__":
