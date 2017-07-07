@@ -117,8 +117,24 @@ class TwitterStatsGenerator(object):
                 if month not in to_return[year]:
                     to_return[year][month] = 0
 
+        return to_return
+
+    def _query_total_tweets_per_month(self):
+        self.database_cursor.execute("""SELECT COUNT(*) AS count, month
+                                        FROM tweets_parsed_time
+                                        GROUP BY month""")
+        to_return = OrderedDict()
+
+        for row in self.database_cursor.fetchall():
+            to_return[int(row[1])] = row[0]
+
+        # if month is not found, we need to fill its data with zeros
+        for month in xrange(1, 13):
+            if month not in to_return:
+                to_return[month] = 0
 
         return to_return
+
 
     def query(self):
         """ Generate dictionary with query output """
@@ -126,6 +142,7 @@ class TwitterStatsGenerator(object):
         to_return['tweet_count_total'] = self._query_total_tweets()
         to_return['tweet_count_per_year'] = self._query_total_tweets_per_year()
         to_return['tweet_count_per_year_month'] = self._query_total_tweets_per_year_month()
+        to_return['tweet_count_per_month'] = self._query_total_tweets_per_month()
         return to_return
 
     def render(self, output_renderer_cls=HTMLOutput):
