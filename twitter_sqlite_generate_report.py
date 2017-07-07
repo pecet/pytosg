@@ -41,10 +41,9 @@ class HTMLOutput(Output):
 
 class TwitterStatsGenerator(object):
     """ Class which generates statistics from Twitter SQLite file """
-    def __init__(self, database_filename='tweets.sqlite', output_renderer_cls=HTMLOutput):
+    def __init__(self, database_filename='tweets.sqlite'):
         self.database = sqlite3.connect(database_filename)
         self.database_cursor = self.database.cursor()
-        self.output_renderer_cls = output_renderer_cls
         if not self._check_if_tables_exists():
             raise Exception('Required database tables are not present in {0} file'.
                             format(database_filename))
@@ -129,13 +128,13 @@ class TwitterStatsGenerator(object):
         to_return['tweet_count_per_year_month'] = self._query_total_tweets_per_year_month()
         return to_return
 
-    def render(self):
+    def render(self, output_renderer_cls=HTMLOutput):
         """ Render output statistics file using chosen renderer """
         data = self.query()
         pprint(data) # debug only
-        render_op = getattr(self.output_renderer_cls, "render", None)
+        render_op = getattr(output_renderer_cls, "render", None)
         if callable(render_op):
-            output = self.output_renderer_cls().render(data)
+            output = output_renderer_cls().render(data)
             # debug only
             print output
             with open('output.html', 'w') as output_file:
@@ -144,7 +143,7 @@ class TwitterStatsGenerator(object):
 
 def main():
     """ Main method """
-    print timeit(lambda: TwitterStatsGenerator(output_renderer_cls=HTMLOutput).render(), number=1)
+    print timeit(lambda: TwitterStatsGenerator().render(output_renderer_cls=HTMLOutput), number=1)
 
 if __name__ == "__main__":
     sys.exit(main())
