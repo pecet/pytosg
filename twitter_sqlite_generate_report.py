@@ -19,6 +19,56 @@ from pprint import pprint
 import pygal
 from mako.template import Template
 
+class LazyDict(dict):
+    """ Simple implementation of dictionary which lazily compute values for its keys
+        when they are accessed
+
+        Note: calling repr function on LazyDict object does not compute any values
+
+        Usage:
+            mydict = LazyDict()
+            mydict['value'] = zero_argument_function
+    """
+
+    def __init__(self):
+        self._computed_dict = {} # already computed dict keys
+        super(LazyDict, self).__init__(self)
+
+    def __setitem__(self, key, value):
+        if callable(value):
+            super(LazyDict, self).__setitem__(key, value)
+        else:
+            raise Exception('Supplied dictionary key is not callable')
+
+    def __repr__(self):
+        repr_str = '{'
+        for key, value in super(LazyDict, self).iteritems():
+
+            value_or_not_computed = 'NOT_COMPUTED' + repr(value)
+            if self.is_computed(key):
+                value_or_not_computed = repr(self._computed_dict[key])
+            repr_str += repr(key) + ": " + value_or_not_computed + ", "
+
+        if len(repr_str) > 2:
+            return repr_str[:-2] + '}'
+        return '{}'
+
+
+    def __getitem__(self, key):
+        if self.is_computed(key):
+            return self._computed_dict[key]
+        else:
+            func = super(LazyDict, self).__getitem__(key)
+            func_value = func() # callability already checked in __setitem__
+            self._computed_dict[key] = func_value
+            return func_value
+
+    def is_computed(self, key):
+        """ Returns True if value for key is already computed
+            or False if value for key is not computed """
+
+        return self._computed_dict.has_key(key)
+
 
 class Output(object):
     """ Abstract class base for output classes """
@@ -36,7 +86,7 @@ class HTMLOutput(Output):
     def render(self, data):
         """ Render HTML file """
         mako_template = Template(filename='html_template.mako', module_directory='tmp/')
-        return mako_template.render_unicode(**data)
+        return mako_template.render_unicode(d=data)
 
 
 class TwitterStatsGenerator(object):
@@ -138,11 +188,11 @@ class TwitterStatsGenerator(object):
 
     def query(self):
         """ Generate dictionary with query output """
-        to_return = {}
-        to_return['tweet_count_total'] = self._query_total_tweets()
-        to_return['tweet_count_per_year'] = self._query_total_tweets_per_year()
-        to_return['tweet_count_per_year_month'] = self._query_total_tweets_per_year_month()
-        to_return['tweet_count_per_month'] = self._query_total_tweets_per_month()
+        to_return = LazyDict()
+        to_return['tweet_count_total'] = self._query_total_tweets
+        to_return['tweet_count_per_year'] = self._query_total_tweets_per_year
+        to_return['tweet_count_per_year_month'] = self._query_total_tweets_per_year_month
+        to_return['tweet_count_per_month'] = self._query_total_tweets_per_month
         return to_return
 
     def render(self, output_renderer_cls=HTMLOutput):
@@ -157,9 +207,22 @@ class TwitterStatsGenerator(object):
             with open('output.html', 'w') as output_file:
                 output_file.write(output)
 
+            pprint(data) # debug only, we should have here values used in template computed
+            # using lazy loader
+
 
 def main():
     """ Main method """
+    # TODO: add unit tests
+    #dtest = LazyDict()
+    #dtest["A"] = lambda: 10
+    #dtest["B"] = lambda: 20
+    #pprint(dtest)
+    #print(dtest)
+    #pprint(dtest["B"])
+    #pprint(dtest["B"])
+    #pprint(dtest)
+    #sys.exit(0)
     print timeit(lambda: TwitterStatsGenerator().render(output_renderer_cls=HTMLOutput), number=1)
 
 if __name__ == "__main__":

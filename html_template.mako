@@ -20,20 +20,20 @@
             <div class="row">
                 <div class="col-md-4">
                     <h3>Total tweets</h3>
-                    <p class="text-left">${tweet_count_total}</p>
+                    <p class="text-left">${d['tweet_count_total']}</p>
                 </div>
                 <div class="col-md-4">
                     <h3>Tweets per year</h3>
-                    <table class="table">
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                             <th>Year</th><th>Tweet count</th><th>Percentage of total</th>
                             </tr>
                         </thead>
                         <tbody>
-                            %for year, year_count in tweet_count_per_year.items():
+                            %for year, year_count in d['tweet_count_per_year'].items():
                             <tr>
-                                <td>${year}</td><td>${year_count}</td><td>${round(float(year_count) / float(tweet_count_total) * 100, 1)}%</td>
+                                <td>${year}</td><td>${year_count}</td><td>${round(float(year_count) / float(d['tweet_count_total']) * 100, 1)}%</td>
                             </tr>
                             %endfor
                         </tbody>
@@ -42,16 +42,16 @@
                 </div>
                 <div class="col-md-4">
                     <h3>Tweets per month</h3>
-                    <table class="table">
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                             <th>Month</th><th>Tweet count</th><th>Percentage of total</th>
                             </tr>
                         </thead>
                         <tbody>
-                            %for month, month_count in tweet_count_per_month.items():
+                            %for month, month_count in d['tweet_count_per_month'].items():
                             <tr>
-                                <td>${calendar.month_name[month]}</td><td>${month_count}</td><td>${round(float(month_count) / float(tweet_count_total) * 100, 1)}%</td>
+                                <td>${calendar.month_name[month]}</td><td>${month_count}</td><td>${round(float(month_count) / float(d['tweet_count_total']) * 100, 1)}%</td>
                             </tr>
                             %endfor
                         </tbody>
