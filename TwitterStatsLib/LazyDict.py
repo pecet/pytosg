@@ -18,6 +18,8 @@ class LazyDict(dict):
     def __setitem__(self, key, value):
         if callable(value):
             super(LazyDict, self).__setitem__(key, value)
+            if self._computed_dict.has_key(key):
+                self._computed_dict.pop(key)
         else:
             raise TypeError('Supplied dictionary key is not callable')
 
