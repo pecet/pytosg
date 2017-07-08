@@ -19,7 +19,7 @@ class LazyDict(dict):
         if callable(value):
             super(LazyDict, self).__setitem__(key, value)
         else:
-            raise Exception('Supplied dictionary key is not callable')
+            raise TypeError('Supplied dictionary key is not callable')
 
     def __repr__(self):
         repr_str = '{'
