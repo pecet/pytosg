@@ -1,8 +1,10 @@
+""" Main module for generating Twitter stats from SQLite file """
+
 import sqlite3
 from collections import OrderedDict
-from .Output import Output, HTMLOutput
-from .LazyDict import LazyDict
 from pprint import pprint
+from .Output import HTMLOutput
+from .LazyDict import LazyDict
 
 class TwitterStatsGenerator(object):
     """ Class which generates statistics from Twitter SQLite file """
@@ -100,6 +102,22 @@ class TwitterStatsGenerator(object):
 
         return to_return
 
+    def _query_total_tweets_per_day_of_week(self):
+        self.database_cursor.execute("""SELECT COUNT(*) AS count, day_of_week
+                                        FROM tweets_parsed_time
+                                        GROUP BY day_of_week""")
+        to_return = OrderedDict()
+
+        for row in self.database_cursor.fetchall():
+            to_return[int(row[1])] = row[0]
+
+        # if day_of_week is not found, we need to fill its data with zeros
+        for day_of_week in xrange(0, 7):
+            if day_of_week not in to_return:
+                to_return[day_of_week] = 0
+
+        return to_return
+
 
     def query(self):
         """ Generate dictionary with query output """
@@ -108,6 +126,7 @@ class TwitterStatsGenerator(object):
         to_return['tweet_count_per_year'] = self._query_total_tweets_per_year
         to_return['tweet_count_per_year_month'] = self._query_total_tweets_per_year_month
         to_return['tweet_count_per_month'] = self._query_total_tweets_per_month
+        to_return['total_tweets_per_day_of_week'] = self._query_total_tweets_per_day_of_week
         return to_return
 
     def render(self, output_renderer_cls=HTMLOutput):

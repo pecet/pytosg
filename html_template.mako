@@ -1,4 +1,6 @@
-<%! import calendar %>
+<%! import calendar
+day_name = calendar.day_name[6:] + calendar.day_name[:6]
+%>
 <!DOCTYPE html>
 <html>
     <head>
@@ -21,10 +23,27 @@
                 <div class="col-md-4">
                     <h3>Total tweets</h3>
                     <p class="text-left">${tweet_count_total}</p>
+
+                    <h3>Tweets per day of the week</h3>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                            <th>Day of the week</th><th>Tweet count</th><th>Percentage of total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            %for day_of_week, day_of_week_count in total_tweets_per_day_of_week.items():
+                            <tr>
+                                <td>${day_name[day_of_week]}</td><td>${day_of_week_count}</td><td>${round(float(day_of_week_count) / float(tweet_count_total) * 100, 1)}%</td>
+                            </tr>
+                            %endfor
+                        </tbody>
+                    </table>
+
                 </div>
                 <div class="col-md-4">
                     <h3>Tweets per year</h3>
-                    <table class="table">
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                             <th>Year</th><th>Tweet count</th><th>Percentage of total</th>
@@ -42,7 +61,7 @@
                 </div>
                 <div class="col-md-4">
                     <h3>Tweets per month</h3>
-                    <table class="table">
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                             <th>Month</th><th>Tweet count</th><th>Percentage of total</th>
