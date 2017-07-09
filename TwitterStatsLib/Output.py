@@ -2,6 +2,7 @@
 
 from abc import ABCMeta, abstractmethod
 from mako.template import Template
+from mako.lookup import TemplateLookup
 
 class Output(object):
     """ Abstract class base for output classes """
@@ -33,6 +34,8 @@ class HTMLOutput(Output):
 
     def render(self, data):
         """ Render HTML file """
-        mako_template = Template(filename='html_template.mako', module_directory='tmp/',
-                                 preprocessor=lambda text: self._preprocess(text, data))
+        template_lookup = TemplateLookup(directories=['templates/'],
+                                         module_directory='tmp/',
+                                         preprocessor=lambda text: self._preprocess(text, data))
+        mako_template = template_lookup.get_template('html_template.mako')
         return mako_template.render_unicode(data=data)

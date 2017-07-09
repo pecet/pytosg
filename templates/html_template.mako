@@ -1,6 +1,7 @@
 <%! import calendar
 day_name = calendar.day_name[6:] + calendar.day_name[:6]
 %>
+<%namespace file="html_template_utils.mako" import="*"/>
 <!DOCTYPE html>
 <html>
     <head>
@@ -9,7 +10,6 @@ day_name = calendar.day_name[6:] + calendar.day_name[:6]
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>pytosg output</title>
-
         <!-- Bootstrap stuff -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     </head>
@@ -23,6 +23,8 @@ day_name = calendar.day_name[6:] + calendar.day_name[:6]
                 <div class="col-md-4">
                     <h3>Total tweets</h3>
                     <p class="text-left">${tweet_count_total}</p>
+
+                    ${chart_horizontal_bar('Tweets per day of the week', day_name, total_tweets_per_day_of_week.values())}
 
                     <h3>Tweets per day of the week</h3>
                     <table class="table table-striped">

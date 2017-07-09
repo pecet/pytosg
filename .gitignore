@@ -8,3 +8,4 @@ tmp/
 *.pyo
 **/*.pyc
 **/*.pyo
+tmp.*
