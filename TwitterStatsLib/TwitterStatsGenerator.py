@@ -139,7 +139,7 @@ class TwitterStatsGenerator(object):
             # debug only
             # print output
             with open('output.html', 'w') as output_file:
-                output_file.write(output)
+                output_file.write(output.encode("utf-8"))
 
             pprint(data) # debug only, we should have here values used in template computed
             # using lazy loader
