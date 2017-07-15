@@ -156,13 +156,7 @@ class TwitterStatsGenerator(object):
                 items.extend(self._flatten(value, new_key, separator=separator).items())
             else:
                 items.append((new_key, value))
-        return dict(items)
-
-    def _flatten_ordered_dict(self, dictionary, parent_key='', separator='_', pad_number_to_size = 2):
-        """ Returns flattened and sorted version of OrderedDict """
-        return OrderedDict(sorted(self._flatten(dictionary, parent_key,
-                           separator, pad_number_to_size).items()))
-
+        return OrderedDict(items)
 
     def _cumulative_dict(self, dictionary):
         """ Returns cumulative Ordered Dict,
@@ -184,7 +178,7 @@ class TwitterStatsGenerator(object):
         to_return['tweet_count_per_month'] = self._query_total_tweets_per_month
         to_return['total_tweets_per_day_of_week'] = self._query_total_tweets_per_day_of_week
         to_return['tweet_count_per_year_week'] = self._query_tweet_per_year_week
-        to_return['flat_tweet_count_per_year_week'] = lambda: self._flatten_ordered_dict(to_return['tweet_count_per_year_week'])
+        to_return['flat_tweet_count_per_year_week'] = lambda: self._flatten(to_return['tweet_count_per_year_week'])
         to_return['cumulative_flat_tweet_count_per_year_week'] = lambda: self._cumulative_dict(to_return['flat_tweet_count_per_year_week'])
         return to_return
 
