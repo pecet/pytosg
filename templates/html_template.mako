@@ -117,7 +117,7 @@ day_name = calendar.day_name[6:] + calendar.day_name[:6]
                     <div class="panel-heading text-center"><h4>Total tweets grouped by week of the year</h4></div>
                     <div class="panel-body">
                         <div class="col-md-12">
-                           ${chart_one_line(cumulative_flat_tweet_count_per_year_week.keys(), cumulative_flat_tweet_count_per_year_week.values())}
+                           ${chart_one_line(map(lambda x: x[:-3] if "_00" in x else None, cumulative_flat_tweet_count_per_year_week.keys()), cumulative_flat_tweet_count_per_year_week.values())}
                         </div>
                     </div>
                 </div>
