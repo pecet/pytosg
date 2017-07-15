@@ -25,11 +25,14 @@
 ${chart.render(is_unicode=True, disable_xml_declaration=True, style=get_custom_style())}
 </%def>
 
-<%def name="chart_one_line(descriptions, values, title=None)">
+<%def name="chart_one_line(descriptions, values, title=None, labels_major=None, interpolate=None)">
 <%
-    chart = pygal.Line()
+    chart = pygal.Line(truncate_label=-1, interpolate=interpolate)
     chart.title = title
     chart.x_labels = descriptions
+    if labels_major:
+        chart.x_labels_major = labels_major
+        chart.show_only_major_dots = True
     chart.add(None, values)
 %>
 ${chart.render(is_unicode=True, disable_xml_declaration=True, style=get_custom_style())}
