@@ -1,5 +1,6 @@
 """ Module providing standard output classes """
 
+import re
 from abc import ABCMeta, abstractmethod
 from mako.template import Template
 from mako.lookup import TemplateLookup
@@ -28,8 +29,13 @@ class HTMLOutput(Output):
             Instead of:
             ${data['tweet_count_total']}
             """
+
+        regex_str = ''
         for key in data.keys():
-            text = text.replace(key, 'data[\'' + key + '\']')
+            regex_str += r'\b' + key + r'\b|'
+        regex_str = r'((?:' + regex_str[:-1] + r')+)'
+        regex = re.compile(regex_str)
+        text = regex.sub(r"data['\1']", text)
         return text
 
     def render(self, data):
