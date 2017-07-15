@@ -1,7 +1,7 @@
 """ Main module for generating Twitter stats from SQLite file """
 
 import sqlite3
-from collections import OrderedDict
+from collections import OrderedDict, MutableMapping
 from pprint import pprint
 from .Output import HTMLOutput
 from .LazyDict import LazyDict
@@ -118,6 +118,62 @@ class TwitterStatsGenerator(object):
 
         return to_return
 
+    def _query_tweet_per_year_week(self):
+        self.database_cursor.execute("""SELECT COUNT(*) AS count, year, week_of_year
+                                        FROM tweets_parsed_time
+                                        GROUP BY year, week_of_year
+                                        ORDER BY year, week_of_year""")
+        to_return = OrderedDict()
+        first_year = None
+        last_year = None
+
+        for row in self.database_cursor.fetchall():
+            if not first_year:
+                first_year = int(row[1])
+            last_year = int(row[1])
+
+            if int(row[1]) not in to_return:
+                to_return[int(row[1])] = OrderedDict()
+            to_return[int(row[1])][int(row[2])] = row[0]
+
+        # if year is not found, we need to fill its data with zeros for each month
+        for year in xrange(first_year, last_year + 1):
+            if year not in to_return:
+                to_return[year] = OrderedDict()
+            for week in xrange(0, 54):
+                if week not in to_return[year]:
+                    to_return[year][week] = 0
+
+        return to_return
+
+    def _flatten(self, dictionary, parent_key='', separator='_', pad_number_to_size = 2):
+        """ Returns flattened version of dictionary """
+        items = []
+        for key, value in dictionary.items():
+            padded_key = str(key).zfill(pad_number_to_size)
+            new_key = str(parent_key) + separator + padded_key if parent_key else padded_key
+            if isinstance(value, MutableMapping):
+                items.extend(self._flatten(value, new_key, separator=separator).items())
+            else:
+                items.append((new_key, value))
+        return dict(items)
+
+    def _flatten_ordered_dict(self, dictionary, parent_key='', separator='_', pad_number_to_size = 2):
+        """ Returns flattened and sorted version of OrderedDict """
+        return OrderedDict(sorted(self._flatten(dictionary, parent_key,
+                           separator, pad_number_to_size).items()))
+
+
+    def _cumulative_dict(self, dictionary):
+        """ Returns cumulative Ordered Dict,
+            where value for each key is value for previous keys plus current value """
+        return_dict_items = []
+        total = 0
+        for key, value in dictionary.items():
+            total += value
+            return_dict_items.append((key, total))
+        return OrderedDict(return_dict_items)
+
 
     def query(self):
         """ Generate dictionary with query output """
@@ -127,6 +183,9 @@ class TwitterStatsGenerator(object):
         to_return['tweet_count_per_year_month'] = self._query_total_tweets_per_year_month
         to_return['tweet_count_per_month'] = self._query_total_tweets_per_month
         to_return['total_tweets_per_day_of_week'] = self._query_total_tweets_per_day_of_week
+        to_return['tweet_count_per_year_week'] = self._query_tweet_per_year_week
+        to_return['flat_tweet_count_per_year_week'] = lambda: self._flatten_ordered_dict(to_return['tweet_count_per_year_week'])
+        to_return['cumulative_flat_tweet_count_per_year_week'] = lambda: self._cumulative_dict(to_return['flat_tweet_count_per_year_week'])
         return to_return
 
     def render(self, output_renderer_cls=HTMLOutput):

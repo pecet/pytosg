@@ -1,5 +1,6 @@
 <%! import pygal %>
 
+
 <%def name="get_custom_style()">
 <%
     custom_style = pygal.style.Style()
