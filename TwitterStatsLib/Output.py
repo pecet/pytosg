@@ -31,7 +31,7 @@ class HTMLOutput(Output):
             """
 
         regex_str = ''
-        for key in data.keys():
+        for key in sorted(data.keys(), key=len, reverse=True):
             regex_str += r'\b' + key + r'\b|'
         regex_str = r'((?:' + regex_str[:-1] + r')+)'
         regex = re.compile(regex_str)
