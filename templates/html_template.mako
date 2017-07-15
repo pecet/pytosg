@@ -120,8 +120,7 @@ day_name = calendar.day_name[6:] + calendar.day_name[:6]
                            ${chart_one_line(map(lambda x: x[:-3] if "_00" in x else None,
                            cumulative_flat_tweet_count_per_year_week.keys()),
                            cumulative_flat_tweet_count_per_year_week.values(),
-                           labels_major=tweet_count_per_year.keys(),
-                           interpolate='cubic'
+                           labels_major=tweet_count_per_year.keys()
                            )}
                         </div>
                     </div>
