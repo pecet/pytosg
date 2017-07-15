@@ -156,7 +156,7 @@ class TwitterStatsGenerator(object):
                 items.extend(self._flatten(value, new_key, separator=separator).items())
             else:
                 items.append((new_key, value))
-        return OrderedDict(items)
+        return OrderedDict(sorted(items))
 
     def _cumulative_dict(self, dictionary):
         """ Returns cumulative Ordered Dict,
