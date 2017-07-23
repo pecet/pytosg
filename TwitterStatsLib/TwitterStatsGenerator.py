@@ -33,6 +33,28 @@ class TwitterStatsGenerator(object):
 
         return True
 
+    def _select_query(self, table_name, to_select, group_by=None, order_by=None):
+        # pack strings into tuples, as we will iterate through tuple/list later
+
+        if isinstance(to_select, str):
+            to_select = (to_select, )
+        if isinstance(group_by, str):
+            group_by = (group_by, )
+        if isinstance(order_by, str):
+            order_by = (order_by, )
+
+        to_select_formatted = ','.join(to_select)
+        group_by_formatted = ('GROUP BY ' + ','.join(group_by)) if group_by else ''
+        order_by_formatted = ('ORDER BY ' + ','.join(order_by)) if order_by else ''
+
+        query_string = """SELECT {to_select} FROM {table_name} {group_by} {order_by}""".format(
+            table_name=table_name, to_select=to_select_formatted,
+            group_by=group_by_formatted, order_by=order_by_formatted
+            )
+        print query_string
+        self.database_cursor.execute(query_string)
+        return self.database_cursor.fetchall()
+
     def _query_total_tweets(self):
         self.database_cursor.execute("""SELECT COUNT(*) AS count FROM tweets""")
         return self.database_cursor.fetchone()[0]

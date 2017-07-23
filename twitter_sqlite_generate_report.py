@@ -24,7 +24,8 @@ def main():
     # pprint(dtest)
     # sys.exit(0)
 
-    print timeit(lambda: TwitterStatsGenerator().render(output_renderer_cls=HTMLOutput), number=1)
+    #print timeit(lambda: TwitterStatsGenerator().render(output_renderer_cls=HTMLOutput), number=1)
+    print TwitterStatsGenerator()._select_query('tweets_parsed_time', ['count(*)', 'year'], 'year')
 
 if __name__ == "__main__":
     sys.exit(main())
