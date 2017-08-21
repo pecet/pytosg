@@ -8,6 +8,7 @@ Author  : Piotr Czarny
 """
 
 import sys
+from pprint import pprint
 from timeit import timeit
 from TwitterStatsLib import TwitterStatsGenerator, HTMLOutput
 
@@ -25,7 +26,12 @@ def main():
     # sys.exit(0)
 
     #print timeit(lambda: TwitterStatsGenerator().render(output_renderer_cls=HTMLOutput), number=1)
-    print TwitterStatsGenerator()._select_query('tweets_parsed_time', ['count(*)', 'year'], 'year')
+    TSG = TwitterStatsGenerator()
+    x = TSG._select_query('tweets_parsed_time', ['count(*)', 'year'], 'year', 'year', ['year', 'count(*)'])
+    pprint(x)
+    print '---'
+    x = TSG._select_query('tweets_parsed_time', ['count(*)', 'year', 'month'], ['year', 'month'], ['year', 'month'], ['year', 'month', 'count(*)'])
+    pprint(x)
 
 if __name__ == "__main__":
     sys.exit(main())

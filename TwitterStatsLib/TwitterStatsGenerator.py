@@ -10,6 +10,7 @@ class TwitterStatsGenerator(object):
     """ Class which generates statistics from Twitter SQLite file """
     def __init__(self, database_filename='tweets.sqlite'):
         self.database = sqlite3.connect(database_filename)
+        self.database.row_factory = sqlite3.Row # allow access to row values via names
         self.database_cursor = self.database.cursor()
         if not self._check_if_tables_exists():
             raise Exception('Required database tables are not present in {0} file'.
@@ -33,7 +34,21 @@ class TwitterStatsGenerator(object):
 
         return True
 
-    def _select_query(self, table_name, to_select, group_by=None, order_by=None):
+    def _map(self, input_dict, values, mapping, use_ordered_dict = True):
+        """ Add dictionary values to multi-level dict / OrderedDict """
+
+        dict_key = values[mapping[0]]
+        if len(mapping) == 2:
+            dict_value = values[mapping[1]]
+            input_dict[dict_key] = dict_value
+        else:
+            if not input_dict.has_key(dict_key):
+                input_dict[dict_key] = OrderedDict() if use_ordered_dict else {}
+            input_dict[dict_key] = self._map(input_dict[dict_key], values, mapping[1:])
+
+        return input_dict
+
+    def _select_query(self, table_name, to_select, group_by=None, order_by=None, mapping=None):
         # pack strings into tuples, as we will iterate through tuple/list later
 
         if isinstance(to_select, str):
@@ -42,6 +57,8 @@ class TwitterStatsGenerator(object):
             group_by = (group_by, )
         if isinstance(order_by, str):
             order_by = (order_by, )
+        if isinstance(mapping, str):
+            mapping = (mapping, )
 
         to_select_formatted = ','.join(to_select)
         group_by_formatted = ('GROUP BY ' + ','.join(group_by)) if group_by else ''
@@ -51,9 +68,13 @@ class TwitterStatsGenerator(object):
             table_name=table_name, to_select=to_select_formatted,
             group_by=group_by_formatted, order_by=order_by_formatted
             )
-        print query_string
-        self.database_cursor.execute(query_string)
-        return self.database_cursor.fetchall()
+
+        to_return = OrderedDict()
+        for row in self.database_cursor.execute(query_string):
+            to_return = self._map(to_return, dict(row), mapping)
+
+        return to_return
+
 
     def _query_total_tweets(self):
         self.database_cursor.execute("""SELECT COUNT(*) AS count FROM tweets""")
