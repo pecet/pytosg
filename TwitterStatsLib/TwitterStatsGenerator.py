@@ -34,7 +34,8 @@ class TwitterStatsGenerator(object):
 
         return True
 
-    def _map(self, input_dict, values, mapping, use_ordered_dict = True):
+    @staticmethod
+    def _map(input_dict, values, mapping, use_ordered_dict = True):
         """ Add dictionary values to multi-level dict / OrderedDict """
 
         dict_key = values[mapping[0]]
@@ -44,7 +45,7 @@ class TwitterStatsGenerator(object):
         else:
             if not input_dict.has_key(dict_key):
                 input_dict[dict_key] = OrderedDict() if use_ordered_dict else {}
-            input_dict[dict_key] = self._map(input_dict[dict_key], values, mapping[1:])
+            input_dict[dict_key] = TwitterStatsGenerator._map(input_dict[dict_key], values, mapping[1:])
 
         return input_dict
 
