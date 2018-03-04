@@ -5,6 +5,7 @@ from collections import OrderedDict, MutableMapping
 from pprint import pprint
 from .Output import HTMLOutput
 from .LazyDict import LazyDict
+from .InsertableOrderedDict import InsertableOrderedDict
 
 class TwitterStatsGenerator(object):
     """ Class which generates statistics from Twitter SQLite file """
@@ -49,9 +50,10 @@ class TwitterStatsGenerator(object):
 
         return input_dict
 
-    def _select_query(self, table_name, to_select, group_by=None, order_by=None, mapping=None):
-        # pack strings into tuples, as we will iterate through tuple/list later
+    def _select_query(self, to_select, group_by=None, order_by=None, mapping=None):
+        table_name='tweets_parsed_time'
 
+        # pack strings into tuples, as we will iterate through tuple/list later
         if isinstance(to_select, str):
             to_select = (to_select, )
         if isinstance(group_by, str):
@@ -82,6 +84,14 @@ class TwitterStatsGenerator(object):
         return self.database_cursor.fetchone()[0]
 
     def _query_total_tweets_per_year(self):
+        to_return = self._select_query(to_select=['count(*)', 'year'], group_by='year', order_by='year', mapping=['year', 'count(*)'])
+        first_year = next(iter(to_return))
+        last_year = next(reversed(to_return))
+        print first_year
+        print last_year
+        pprint(to_return)
+        return to_return
+
         self.database_cursor.execute("""SELECT COUNT(*) AS count, year
                                         FROM tweets_parsed_time
                                         GROUP BY year""")
@@ -131,6 +141,7 @@ class TwitterStatsGenerator(object):
         return to_return
 
     def _query_total_tweets_per_month(self):
+
         self.database_cursor.execute("""SELECT COUNT(*) AS count, month
                                         FROM tweets_parsed_time
                                         GROUP BY month""")
@@ -229,7 +240,7 @@ class TwitterStatsGenerator(object):
     def render(self, output_renderer_cls=HTMLOutput):
         """ Render output statistics file using chosen renderer """
         data = self.query()
-        pprint(data) # debug only
+        #pprint(data) # debug only
         render_op = getattr(output_renderer_cls, "render", None)
         if callable(render_op):
             output = output_renderer_cls().render(data)
@@ -238,5 +249,5 @@ class TwitterStatsGenerator(object):
             with open('output.html', 'w') as output_file:
                 output_file.write(output.encode("utf-8"))
 
-            pprint(data) # debug only, we should have here values used in template computed
+            #pprint(data) # debug only, we should have here values used in template computed
             # using lazy loader
