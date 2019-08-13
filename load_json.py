@@ -1,4 +1,4 @@
-from TwitterStatsLib.TwitterJsonLoader import TwitterJsonLoader
+from TwitterStatsLib import TwitterJsonLoader
 
 test = TwitterJsonLoader()
 test.do_something()
