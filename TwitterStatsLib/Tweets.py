@@ -12,7 +12,7 @@ class Tweets(BaseModel):
     source_parsed = CharField(max_length=64)
 
     # replies
-    in_reply_to_status_id = IntegerField()
-    in_reply_to_user_id = IntegerField()
-    in_reply_to_screen_name = CharField(max_length=MAX_USERNAME_LENGTH)
+    in_reply_to_status_id = IntegerField(null=True)
+    in_reply_to_user_id = IntegerField(null=True)
+    in_reply_to_screen_name = CharField(max_length=MAX_USERNAME_LENGTH, null=True)
     
