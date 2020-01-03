@@ -1,4 +1,4 @@
-from peewee import * # pylint: disable=W0614
+from peewee import *  # pylint: disable=W0614
 from .Tweets import Tweets
 import TwitterStatsLib.BaseModel as BaseModel
 import ijson
@@ -6,6 +6,7 @@ import sys
 from pprint import pprint
 from datetime import datetime
 import locale
+
 
 class TwitterJsonLoader(object):
     ITEMS_TO_INSERT_AT_ONCE = 15
@@ -30,7 +31,7 @@ class TwitterJsonLoader(object):
         # Because strptime is locale depended we need to change locale do date time operations
         # and then change it back
         saved_locale = locale.getlocale(locale.LC_ALL)
-        locale.setlocale(locale.LC_ALL, "C")
+        locale.setlocale(locale.LC_ALL, 'C')
         parsed_datetime = datetime.strptime(datetime_str, '%a %b %d %H:%M:%S %z %Y')
         locale.setlocale(locale.LC_ALL, saved_locale)
         return parsed_datetime
@@ -77,4 +78,3 @@ class TwitterJsonLoader(object):
         if item_buffer_insert_counter > 0:
             with self.db.atomic():
                 Tweets.insert_many(item_buffer).execute()
-
