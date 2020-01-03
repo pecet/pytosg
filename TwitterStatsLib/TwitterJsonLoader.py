@@ -4,6 +4,8 @@ import TwitterStatsLib.BaseModel as BaseModel
 import ijson
 import sys
 from pprint import pprint
+from datetime import datetime
+import locale
 
 class TwitterJsonLoader(object):
     ITEMS_TO_INSERT_AT_ONCE = 15
@@ -23,6 +25,15 @@ class TwitterJsonLoader(object):
         source_part = full_source[first_token + 1:]
         last_token = source_part.find('<')
         return source_part[:last_token]
+
+    def _parse_datetime(self, datetime_str: str) -> datetime:
+        # Because strptime is locale depended we need to change locale do date time operations
+        # and then change it back
+        saved_locale = locale.getlocale(locale.LC_ALL)
+        locale.setlocale(locale.LC_ALL, "C")
+        parsed_datetime = datetime.strptime(datetime_str, '%a %b %d %H:%M:%S %z %Y')
+        locale.setlocale(locale.LC_ALL, saved_locale)
+        return parsed_datetime
 
     def read_json_to_db(self, file_handle):
         # TODO: Manually removed 'window.YTD.tweet' from file to make it actually parse as JSON.
@@ -49,7 +60,7 @@ class TwitterJsonLoader(object):
             # Add items which are results of pre-processing JSON
             item_to_insert.update({
                 'source_parsed': self._parse_source(item['source']),
-                'created_at': item['created_at']
+                'created_at': self._parse_datetime(item['created_at'])
             })
 
             # To reduce number of write operations to DB, we actually insert more than one item at once
