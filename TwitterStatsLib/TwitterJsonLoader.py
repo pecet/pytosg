@@ -6,7 +6,7 @@ import sys
 from pprint import pprint
 
 class TwitterJsonLoader(object):
-    ITEMS_TO_INSERT_AT_ONCE = 10
+    ITEMS_TO_INSERT_AT_ONCE = 15
 
     def __init__(self):
         self.db = SqliteDatabase('tweets.sqlite')
@@ -27,19 +27,32 @@ class TwitterJsonLoader(object):
     def read_json_to_db(self, file_handle):
         # TODO: Manually removed 'window.YTD.tweet' from file to make it actually parse as JSON.
         # This needs to be done automatically
+
+        # Keys from json to use directly (i.e. without transforming), we do not use all data from JSON in Tweets table
+        # but we need to filter unused ones, as peewee will throw exception if dictionary passed to insert_many
+        # below will contain keys not present in DB table
+        keys_to_use_directly = ('id', 'full_text', 'source', 'in_reply_to_screen_name',
+                                'in_reply_to_user_id', 'in_reply_to_status_id', 'in_reply_to_screen_name')
+
         json_iterator = ijson.items(file_handle, 'item')
         json_keys_to_use = []
         item_buffer_insert_counter = 0
         item_buffer = []
+        item: dict
         for item in json_iterator:
-            item_to_insert = {
-                'tweet_id': item['id'],
-                'text': item['full_text'],
-                'source': item['source'],
+            # Filter JSON to get items which can be used as-is
+            item_to_insert = {key: value for key, value in item.items() if key in keys_to_use_directly}
+            # If there is no such item insert_many still requires item to be present
+            for key in keys_to_use_directly:
+                if key not in item_to_insert:
+                    item_to_insert[key] = None
+            # Add items which are results of pre-processing JSON
+            item_to_insert.update({
                 'source_parsed': self._parse_source(item['source']),
                 'created_at': item['created_at']
-            }
-            # to reduce number of write operations to DB, we actually insert more than one item at once
+            })
+
+            # To reduce number of write operations to DB, we actually insert more than one item at once
             # items are stored in buffer
             item_buffer.append(item_to_insert)
             item_buffer_insert_counter += 1

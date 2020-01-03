@@ -5,10 +5,10 @@ class Tweets(BaseModel):
     # via official Twitter documentation
     MAX_USERNAME_LENGTH = 15
 
-    tweet_id = IntegerField()
-    text = TextField()
+    id = IntegerField(primary_key=True, unique=True)
+    full_text = TextField()
     created_at = DateTimeField()
-    source = CharField(max_length=128) # for some reason this contains whole HTML link and not only Client name
+    source = CharField(max_length=128)  # for some reason this contains whole HTML link and not only Client name
     source_parsed = CharField(max_length=64)
 
     # replies
