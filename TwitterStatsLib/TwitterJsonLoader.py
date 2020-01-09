@@ -34,7 +34,10 @@ class TwitterJsonLoader(object):
         locale.setlocale(locale.LC_ALL, 'C')
         parsed_datetime = datetime.strptime(datetime_str, '%a %b %d %H:%M:%S %z %Y')
         locale.setlocale(locale.LC_ALL, saved_locale)
-        return parsed_datetime
+        # we need to store date time without timezone, everything will work fine
+        # (as in sqlite in datetime any text can be stored) but on runtime and querying this data
+        # and e.g. using .day property of peewee DateTimeField where e.g. selecting it will fail on runtime
+        return parsed_datetime.replace(tzinfo=None)
 
     def read_json_to_db(self, file_handle):
         # TODO: Manually removed 'window.YTD.tweet' from file to make it actually parse as JSON.
